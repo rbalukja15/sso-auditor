@@ -1,0 +1,64 @@
+# Local hooks only: every tool comes from uv.lock, so pre-commit never downloads
+# hook code from another repository and the versions match CI.
+default_install_hook_types: [pre-commit]
+repos:
+  - repo: local
+    hooks:
+      - id: uv-lock
+        name: uv.lock is up to date
+        entry: uv lock --check
+        language: system
+        files: ^(pyproject\.toml|packages/[^/]+/pyproject\.toml|uv\.lock)$
+        pass_filenames: false
+      - id: ruff-check
+        name: ruff check
+        entry: uv run --frozen ruff check --fix --force-exclude
+        language: system
+        types_or: [python, pyi]
+        require_serial: true
+      - id: ruff-format
+        name: ruff format
+        entry: uv run --frozen ruff format --force-exclude
+        language: system
+        types_or: [python, pyi]
+        require_serial: true
+      - id: mypy
+        name: mypy
+        entry: uv run --frozen mypy
+        language: system
+        types_or: [python, pyi]
+        pass_filenames: false
+      - id: trailing-whitespace
+        name: trim trailing whitespace
+        entry: uv run --frozen trailing-whitespace-fixer --markdown-linebreak-ext=md
+        language: system
+        types: [text]
+      - id: end-of-file-fixer
+        name: fix end of files
+        entry: uv run --frozen end-of-file-fixer
+        language: system
+        types: [text]
+      - id: check-yaml
+        name: check yaml
+        entry: uv run --frozen check-yaml
+        language: system
+        types: [yaml]
+      - id: check-toml
+        name: check toml
+        entry: uv run --frozen check-toml
+        language: system
+        types: [toml]
+      - id: check-merge-conflict
+        name: check for merge conflicts
+        entry: uv run --frozen check-merge-conflict
+        language: system
+        types: [text]
+      - id: check-added-large-files
+        name: check for added large files
+        entry: uv run --frozen check-added-large-files --maxkb=500
+        language: system
+      - id: detect-private-key
+        name: detect private key
+        entry: uv run --frozen detect-private-key
+        language: system
+        types: [text]
