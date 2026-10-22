@@ -8,3 +8,4 @@ new ADR supersedes it.
 | ADR | Title | Status |
 | --- | --- | --- |
 | [0001](0001-stack-and-scope.md) | Stack and scope | Accepted |
+| [0002](0002-data-sources-and-read-only-guarantees.md) | Data sources and read-only guarantees | Accepted |
