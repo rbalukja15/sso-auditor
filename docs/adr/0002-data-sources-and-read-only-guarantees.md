@@ -89,24 +89,26 @@ bypass the address checks.
 | Rule | `hosted` profile | `cli` profile (default) | `cli` with flags |
 | --- | --- | --- | --- |
 | Schemes | `https` | `https` | `--allow-http`: also `http`, but only when every resolved address is loopback |
-| Ports | 443 | 443 | `--allow-port N` adds a port (self-hosted Keycloak often uses 8443) |
+| Ports | 443 | 443 | `--allow-port N` adds a port (self-hosted Keycloak often uses 8443). A local `http://localhost:8080` needs `--allow-http --allow-port 8080`. |
 | Public unicast addresses | Allowed | Allowed | Allowed |
 | Private ranges: `10.0.0.0/8`, `172.16.0.0/12`, `192.168.0.0/16`, `100.64.0.0/10`, `fc00::/7`, loopback `127.0.0.0/8` and `::1` | Blocked | Blocked | `--allow-private-network`: allowed. `--allow-http` alone allows loopback for `http` URLs. |
-| Link-local and cloud metadata: `169.254.0.0/16`, `fe80::/10`, `fd00:ec2::254`, `100.100.100.200` | Blocked | Blocked | Blocked, always |
+| Link-local and cloud metadata: `169.254.0.0/16`, `fe80::/10`, `100.100.100.200`, and the IPv6 metadata services that sit inside `fc00::/7`: AWS `fd00:ec2::/32`, GCP `fd20:ce::254`, OCI `fd00:c1::a9fe:a9fe` | Blocked | Blocked | Blocked, always |
 | Everything else that is not global unicast: `0.0.0.0/8`, multicast, reserved, documentation and benchmarking ranges, `192.0.0.0/24`, deprecated IPv6 forms | Blocked | Blocked | Blocked, always |
-| IPv4-mapped, NAT64 (`64:ff9b::/96`) and 6to4 addresses | Judged by the embedded IPv4 address | Same | Same |
-| Hostnames `localhost`, `*.localhost`, `*.local`, `*.internal`, `*.home.arpa`, and single-label names | Refused | Refused | `--allow-private-network`: allowed (the addresses they resolve to are still checked). `--allow-http`: `localhost` and `*.localhost` allowed for `http`. |
+| IPv4-mapped addresses (`::ffff:0:0/96`) | Judged by the embedded IPv4 address | Same | Same |
+| NAT64 (`64:ff9b::/96`) and 6to4 (`2002::/16`) addresses, which reach a translator or relay rather than this host | Allowed only when the embedded IPv4 address is public | Same | Blocked, always, unless the embedded address is public |
+| Hostnames `localhost`, `*.localhost`, `*.local`, `*.internal`, `home.arpa` and `*.home.arpa`, `*.localdomain`, `*.localdomain6`, `*.flycast`, and single-label names | Refused | Refused | `--allow-private-network`: allowed (the addresses they resolve to are still checked). `--allow-http`: `localhost` and `*.localhost` allowed for `http`. |
 | Cloud metadata hostnames (`metadata.google.internal`, `metadata`, `instance-data`, ...) | Refused | Refused | Refused, always |
 | URLs with userinfo, or IPv4 literals in a non-canonical form (`2130706433`, `0x7f.1`, `0177.0.0.1`, `127.1`) | Refused | Refused | Refused, always |
-| Redirects | At most 3, each re-validated; none for credentialed requests or `POST` | Same | Same |
-| Limits | Connect, read and total timeouts; body cap after decompression; JSON depth cap; JWKS key-count and RSA modulus caps | Same | Same |
+| Redirects | At most 3, each re-validated; never from `https` to `http`; followed only by a plain `GET` with no body and no header but `Accept` | Same | Same |
+| Limits | A total deadline (15 s) enforced on every connect, TLS handshake, socket read and write, plus connect and read timeouts; at most 4 addresses tried per hop, alternating address families; body cap (1 MiB) as received and after decompression; JSON depth (32) and size (20,000 values) caps; JWKS key-count and RSA modulus caps | Same | Same |
 
 - **`hosted` is fixed.** It is chosen by the server's configuration, takes no parameters,
   and refuses to be constructed in a relaxed form. No request parameter can change it.
 - **`cli` relaxations are explicit and loud.** Each flag prints a warning on every run.
-- **TLS.** Certificates are always verified against the hostname, with TLS 1.2 or later.
-  Private CAs are supported with `--ca-bundle PATH` or `SSL_CERT_FILE`. There is no
-  insecure mode.
+- **TLS.** Certificates are always verified against the hostname, with TLS 1.2 or later,
+  against the bundled Mozilla CA set (certifi). The fetcher reads nothing from the
+  environment, including `SSLKEYLOGFILE`; for a private CA the CLI passes `--ca-bundle PATH`, or `SSL_CERT_FILE` when
+  it is set. The hosted profile only uses the bundled set. There is no insecure mode.
 
 ### LLM provider traffic
 

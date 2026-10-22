@@ -11,7 +11,9 @@ dev = [
     "pre-commit>=4.7.0",
     "pre-commit-hooks>=6.0.0",
     "pytest>=9.1.1",
+    "pytest-socket>=0.8.1",
     "ruff>=0.17.1",
+    "trustme>=1.2.1",
     "zizmor>=1.31.1",
 ]
 
@@ -49,23 +51,91 @@ select = [
     "TID", # flake8-tidy-imports
     "RUF", # ruff-specific
 ]
+ignore = [
+    "N818", # exception names say what happened (URLRejected, FetchTimeout), not "...Error"
+]
 
 [tool.ruff.lint.per-file-ignores]
 "packages/*/tests/**" = [
-    "S101", # assert is how pytest checks things
-    "S603", # subprocess calls in tests run our own console script
+    "S101",   # assert is how pytest checks things
+    "S603",   # subprocess calls in tests run our own console script
+    "S104",   # 0.0.0.0 appears as an address to classify, never one to bind
+    "TID251", # tests drive the fetcher with httpx mock transports and a local server
 ]
+"packages/core/src/sso_auditor_core/fetch/**" = ["TID251"]
+
+# The safe fetcher is the only network client (#30, ADR-0002). Everything else that can
+# open a connection, or import a module by name at runtime, is banned outside
+# sso_auditor_core/fetch/. test_fetch_is_the_only_client.py reads this table and checks
+# the source tree too, so a noqa comment can't get around it.
+[tool.ruff.lint.flake8-tidy-imports.banned-api]
+"aiohttp".msg = "use sso_auditor_core.fetch.SafeFetcher (#30)"
+"anyio.connect_tcp".msg = "use sso_auditor_core.fetch.SafeFetcher (#30)"
+"anyio.connect_unix".msg = "use sso_auditor_core.fetch.SafeFetcher (#30)"
+"anyio.create_connected_udp_socket".msg = "use sso_auditor_core.fetch.SafeFetcher (#30)"
+"anyio.create_udp_socket".msg = "use sso_auditor_core.fetch.SafeFetcher (#30)"
+"anyio.getaddrinfo".msg = "use sso_auditor_core.fetch.SafeFetcher (#30)"
+"anyio.getnameinfo".msg = "use sso_auditor_core.fetch.SafeFetcher (#30)"
+"asyncio.open_connection".msg = "use sso_auditor_core.fetch.SafeFetcher (#30)"
+"asyncio.open_unix_connection".msg = "use sso_auditor_core.fetch.SafeFetcher (#30)"
+"asyncio.streams".msg = "use sso_auditor_core.fetch.SafeFetcher (#30)"
+"builtins.__import__".msg = "use sso_auditor_core.fetch.SafeFetcher (#30)"
+"builtins.eval".msg = "use sso_auditor_core.fetch.SafeFetcher (#30)"
+"builtins.exec".msg = "use sso_auditor_core.fetch.SafeFetcher (#30)"
+"ftplib".msg = "use sso_auditor_core.fetch.SafeFetcher (#30)"
+"h11".msg = "use sso_auditor_core.fetch.SafeFetcher (#30)"
+"h2".msg = "use sso_auditor_core.fetch.SafeFetcher (#30)"
+"http.client".msg = "use sso_auditor_core.fetch.SafeFetcher (#30)"
+"httpcore".msg = "use sso_auditor_core.fetch.SafeFetcher (#30)"
+"httplib2".msg = "use sso_auditor_core.fetch.SafeFetcher (#30)"
+"httpx".msg = "use sso_auditor_core.fetch.SafeFetcher (#30)"
+"imaplib".msg = "use sso_auditor_core.fetch.SafeFetcher (#30)"
+"importlib.__import__".msg = "use sso_auditor_core.fetch.SafeFetcher (#30)"
+"importlib.import_module".msg = "use sso_auditor_core.fetch.SafeFetcher (#30)"
+"importlib.machinery".msg = "use sso_auditor_core.fetch.SafeFetcher (#30)"
+"importlib.util".msg = "use sso_auditor_core.fetch.SafeFetcher (#30)"
+"logging.config.listen".msg = "use sso_auditor_core.fetch.SafeFetcher (#30)"
+"logging.handlers.DatagramHandler".msg = "use sso_auditor_core.fetch.SafeFetcher (#30)"
+"logging.handlers.HTTPHandler".msg = "use sso_auditor_core.fetch.SafeFetcher (#30)"
+"logging.handlers.SMTPHandler".msg = "use sso_auditor_core.fetch.SafeFetcher (#30)"
+"logging.handlers.SocketHandler".msg = "use sso_auditor_core.fetch.SafeFetcher (#30)"
+"logging.handlers.SysLogHandler".msg = "use sso_auditor_core.fetch.SafeFetcher (#30)"
+"multiprocessing.connection".msg = "use sso_auditor_core.fetch.SafeFetcher (#30)"
+"pkgutil.resolve_name".msg = "use sso_auditor_core.fetch.SafeFetcher (#30)"
+"poplib".msg = "use sso_auditor_core.fetch.SafeFetcher (#30)"
+"pycurl".msg = "use sso_auditor_core.fetch.SafeFetcher (#30)"
+"pydoc.locate".msg = "use sso_auditor_core.fetch.SafeFetcher (#30)"
+"requests".msg = "use sso_auditor_core.fetch.SafeFetcher (#30)"
+"runpy".msg = "use sso_auditor_core.fetch.SafeFetcher (#30)"
+"smtplib".msg = "use sso_auditor_core.fetch.SafeFetcher (#30)"
+"socket".msg = "use sso_auditor_core.fetch.SafeFetcher (#30)"
+"socketserver".msg = "use sso_auditor_core.fetch.SafeFetcher (#30)"
+"ssl.create_connection".msg = "use sso_auditor_core.fetch.SafeFetcher (#30)"
+"ssl.get_server_certificate".msg = "use sso_auditor_core.fetch.SafeFetcher (#30)"
+"urllib.request".msg = "use sso_auditor_core.fetch.SafeFetcher (#30)"
+"urllib.robotparser".msg = "use sso_auditor_core.fetch.SafeFetcher (#30)"
+"urllib3".msg = "use sso_auditor_core.fetch.SafeFetcher (#30)"
+"xmlrpc.client".msg = "use sso_auditor_core.fetch.SafeFetcher (#30)"
 
 [tool.mypy]
 python_version = "3.12"
 strict = true
 files = ["packages"]
 explicit_package_bases = true
-mypy_path = ["packages/core/src", "packages/cli/src", "packages/api/src"]
+mypy_path = ["packages/core/src", "packages/cli/src", "packages/api/src", "packages/core/tests"]
 warn_unreachable = true
 
 [tool.pytest.ini_options]
 testpaths = ["packages/core/tests", "packages/cli/tests", "packages/api/tests"]
-addopts = ["--import-mode=importlib", "--strict-markers", "--strict-config", "-ra"]
+pythonpath = ["packages/core/tests"]
+addopts = [
+    "--import-mode=importlib",
+    "--strict-markers",
+    "--strict-config",
+    "-ra",
+    # pytest-socket: tests may only open connections to loopback, where the fetcher's
+    # TLS tests run a local server. Nothing reaches the real network.
+    "--allow-hosts=127.0.0.1,::1",
+]
 xfail_strict = true
 filterwarnings = ["error"]
