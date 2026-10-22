@@ -12,6 +12,7 @@ dev = [
     "pre-commit-hooks>=6.0.0",
     "pytest>=9.1.1",
     "ruff>=0.17.1",
+    "zizmor>=1.31.1",
 ]
 
 [tool.uv]
