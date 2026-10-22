@@ -38,7 +38,8 @@ deterministic checks against the OAuth 2.0 and OpenID Connect specs, and reports
 
 **Read-only, always.** sso-auditor never attempts exploitation, never runs an OAuth flow,
 never registers clients and never changes configuration. It makes a short, fixed list of
-requests, recorded in ADR-0002 (#6), and every one of them goes through a fetcher that
+requests, recorded in
+[ADR-0002](docs/adr/0002-data-sources-and-read-only-guarantees.md), and every one of them goes through a fetcher that
 refuses private, loopback and cloud-metadata addresses.
 
 **Non-goals** (from [ADR-0001](docs/adr/0001-stack-and-scope.md))
