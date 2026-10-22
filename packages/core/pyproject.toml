@@ -11,7 +11,11 @@ classifiers = [
     "Topic :: Security",
     "Typing :: Typed",
 ]
-dependencies = []
+dependencies = [
+    "certifi>=2026.10.19",
+    "httpcore>=1.0.9",
+    "httpx>=0.28.1",
+]
 
 [project.urls]
 Repository = "https://github.com/rbalukja15/sso-auditor"

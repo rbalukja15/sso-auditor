@@ -25,7 +25,7 @@ LLM output is untrusted too. Requests the tool may make are listed in
 | --- | --- | --- | --- |
 | **A1** | LLM API key | Hosted demo's secret store; a CLI user's environment | Spending it costs money; a leak lets others spend it. |
 | **A2** | Admin credentials (v1.1) | CLI user's environment, a file or a prompt | Read access to realm and client settings, which can include client secrets if the account is over-privileged. |
-| **A3** | The server's network position | Hosted demo | From inside Fly.io the server can reach the private network (`fdaa::/16`), its own loopback services and, on other clouds, a metadata endpoint (`169.254.169.254`, `fd00:ec2::254`). An SSRF turns these into the attacker's. |
+| **A3** | The server's network position | Hosted demo | From inside Fly.io the server can reach the private network (`fdaa::/16`), its own loopback services and, on other clouds, a metadata endpoint (`169.254.169.254`, or an IPv6 one such as `fd00:ec2::254`). An SSRF turns these into the attacker's. |
 | **A4** | Users' trust in the output | Every report | People act on the findings. A report that hides a finding, invents one, cites the wrong section or carries injected markup does harm even with no breach. |
 | **A5** | Demo availability and budget | Hosted demo | Exhausting CPU, memory, outbound connections or the LLM budget takes the demo down for everyone. |
 | **A6** | Third parties' goodwill | Other people's identity providers | The demo must not become a free scanner or traffic reflector aimed at someone else's servers. |
@@ -41,7 +41,8 @@ user audits their issuer, and the demo by submitting it.
 | --- | --- | --- | --- |
 | `jwks_uri`, an endpoint URL or a redirect points at a private, loopback, link-local or metadata address | A3 | Every outbound request goes through one fetcher that validates every resolved address, re-validates each redirect hop, and refuses non-public ranges | #30 |
 | DNS rebinding: a public answer for the check, a private one for the connection | A3 | The fetcher resolves once and connects to the validated IP, keeping SNI and certificate checks on the hostname | #30 |
-| Huge, deeply nested, slow or compressed-bomb responses; JWKS with thousands of keys or giant RSA moduli | A5 | Timeouts and a total deadline, a size cap after decompression, a JSON depth cap, key-count and modulus caps | #30 |
+| Huge, deeply nested, slow or compressed-bomb responses; JWKS with thousands of keys or giant RSA moduli | A5 | A total deadline enforced on every connect, handshake, socket read and write (so headers, `100 Continue` or trailers dripped a byte at a time can't hold a fetch open), a size cap before and after decompression, JSON depth and size caps, key-count and modulus caps | #30 |
+| A DNS answer with hundreds of addresses, or a zone that never answers | A5, A6 | At most 4 addresses tried per hop. Lookups have a hard wait limit and share a fixed pool of 64 slots; when the pool is full, new lookups fail at once instead of queueing | #30, #20 |
 | HTML or script in string fields (`service_documentation`, `op_policy_uri`, ...) | A4 | The web report renders every config value as text under a strict CSP; only spec URLs from rule metadata are links | #19 |
 | Instructions planted in string fields, aimed at the LLM | A4 | See T3 | #16 |
 | A document crafted to look compliant | A4 | Findings come only from deterministic rules; data the issuer doesn't publish is reported as `not_evaluated`, never as a pass | #10 |
@@ -89,9 +90,13 @@ Compromises a dependency, a GitHub Action or a release artifact.
 - **The LLM provider sees finding values.** Only short, truncated values from public
   documents on the demo; in the CLI, admin-derived values are sent only with an explicit
   flag (#16).
-- **Trust in TLS and DNS.** The fetcher relies on the system's CA bundle (or the one the
-  user passes) and on DNS answers being validated per connection. A CA compromise is
+- **Trust in TLS and DNS.** The fetcher relies on the bundled Mozilla CA set (or the CA
+  bundle the CLI user passes) and on DNS answers being validated per connection. A CA compromise is
   out of scope.
+- **DNS lookups can't be cancelled.** A lookup that times out keeps its slot until the
+  system resolver gives up. The hosted image should set short resolver timeouts (for
+  example `RES_OPTIONS="timeout:2 attempts:2"`) so slots come back quickly, and the
+  per-client limits in #20 keep one requester from holding them all.
 - **Proxies are not used.** The fetcher ignores `HTTP(S)_PROXY`, because a proxy would
   resolve hostnames itself and bypass the address checks. Networks that force a proxy
   can't run live audits; offline file inputs still work (#7).
