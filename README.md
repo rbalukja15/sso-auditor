@@ -1,5 +1,6 @@
 # sso-auditor
 
+[![CI](https://github.com/rbalukja15/sso-auditor/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/rbalukja15/sso-auditor/actions/workflows/ci.yml?query=branch%3Amain)
 [![License: Apache-2.0](https://img.shields.io/github/license/rbalukja15/sso-auditor)](LICENSE)
 
 **Audit any OpenID Connect provider's published configuration from the outside, with no
@@ -125,7 +126,7 @@ You need [uv](https://docs.astral.sh/uv/) and `make`.
 
 ```sh
 make dev    # install the packages and dev tools, set up pre-commit
-make lint   # ruff, format check, mypy --strict
+make lint   # ruff, format check, mypy --strict, zizmor workflow audit
 make test   # pytest
 ```
 

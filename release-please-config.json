@@ -1,0 +1,27 @@
+{
+  "$schema": "https://raw.githubusercontent.com/googleapis/release-please/main/schemas/config.json",
+  "release-type": "simple",
+  "include-component-in-tag": false,
+  "include-v-in-tag": true,
+  "bump-minor-pre-major": true,
+  "changelog-sections": [
+    { "type": "feat", "section": "Features" },
+    { "type": "fix", "section": "Bug fixes" },
+    { "type": "perf", "section": "Performance" },
+    { "type": "docs", "section": "Documentation" },
+    { "type": "refactor", "section": "Refactoring", "hidden": true },
+    { "type": "test", "section": "Tests", "hidden": true },
+    { "type": "ci", "section": "CI", "hidden": true },
+    { "type": "chore", "section": "Chores", "hidden": true }
+  ],
+  "packages": {
+    ".": {
+      "package-name": "sso-auditor",
+      "extra-files": [
+        "packages/core/src/sso_auditor_core/__init__.py",
+        "packages/cli/src/sso_auditor_cli/__init__.py",
+        "packages/api/src/sso_auditor_api/__init__.py"
+      ]
+    }
+  }
+}
