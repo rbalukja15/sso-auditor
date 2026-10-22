@@ -120,6 +120,25 @@ v1.0 is discovery-only. It ships when M0 to M6 are done.
 After v1.0: **Keycloak admin mode** (#8, #11, #12) adds realm and client checks from the
 admin API with a view-only service account, local CLI only.
 
+## Responsible use
+
+- Audit only issuers you operate or are authorised to assess. sso-auditor reads public
+  metadata, but an audit is still a security assessment of someone's system.
+- Use admin mode (v1.1) only with a view-only service account the realm's owner created
+  for it. The hosted demo never accepts credentials.
+- The hosted demo logs the time, the audited host, the outcome and LLM token use, never
+  fetched documents or LLM prompts. [SECURITY.md](SECURITY.md#responsible-use) has the
+  full policy.
+
+## Security
+
+Report vulnerabilities privately through
+[GitHub's vulnerability reporting](https://github.com/rbalukja15/sso-auditor/security/advisories/new);
+see [SECURITY.md](SECURITY.md) for scope and what to expect. The
+[threat model](docs/threat-model.md) lists the assets, the adversaries (malicious issuer
+operators, demo abusers, prompt injectors, supply-chain attackers) and the issue that
+mitigates each attack.
+
 ## Development
 
 You need [uv](https://docs.astral.sh/uv/) and `make`.
