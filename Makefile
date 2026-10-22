@@ -14,10 +14,11 @@ dev: ## Install the packages and dev tools, and set up the pre-commit hook
 	$(UV) sync --locked
 	$(RUN) pre-commit install
 
-lint: ## Lint, check formatting and type-check
+lint: ## Lint, check formatting, type-check and audit the workflows
 	$(RUN) ruff check .
 	$(RUN) ruff format --check .
 	$(RUN) mypy
+	$(RUN) zizmor --quiet .github
 
 fmt: ## Format and apply safe lint fixes
 	$(RUN) ruff format .
