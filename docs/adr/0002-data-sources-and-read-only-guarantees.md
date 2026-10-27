@@ -49,6 +49,10 @@ These are the only requests sso-auditor makes. A request not in this table is a 
 `{prefix}` is empty for Keycloak 17 and later, or `/auth` for the legacy layout, matching
 the issuer the user entered.
 
+The document R1 returns is used only if its `issuer` is identical to the issuer R1 was
+built from (for a full discovery URL, the part before `/.well-known/openid-configuration`),
+as OIDC Discovery §4.3 requires. #7 checks this before R2 follows its `jwks_uri`.
+
 **Never called**, even though discovery advertises them: the authorization, userinfo,
 registration, pushed authorization (PAR), CIBA backchannel authentication, device
 authorization, introspection, revocation and end-session endpoints. Checks about those
@@ -82,9 +86,11 @@ settings through the API, and the docs for admin mode say so.
 Every request goes through the safe fetcher (#30), the only HTTP client in the codebase.
 It parses each URL once, validates it, resolves the hostname, validates every address in
 the answer, and connects to the validated IP while sending SNI and checking the
-certificate against the hostname. Each redirect hop goes through the same checks. HTTP
-proxies from the environment are ignored: a proxy resolves hostnames itself, which would
-bypass the address checks.
+certificate against the hostname. When a name resolves to several addresses, every one
+is validated before any is tried, and the fetcher only ever connects to an address it
+validated. Each redirect hop goes through the same checks. HTTP proxies from the
+environment are ignored: a proxy resolves hostnames itself, which would bypass the
+address checks.
 
 | Rule | `hosted` profile | `cli` profile (default) | `cli` with flags |
 | --- | --- | --- | --- |
@@ -100,6 +106,11 @@ bypass the address checks.
 | URLs with userinfo, or IPv4 literals in a non-canonical form (`2130706433`, `0x7f.1`, `0177.0.0.1`, `127.1`) | Refused | Refused | Refused, always |
 | Redirects | At most 3, each re-validated; none for credentialed requests or `POST` | Same | Same |
 | Limits | Connect, read and total timeouts; body cap after decompression; JSON depth cap; JWKS key-count and RSA modulus caps | Same | Same |
+
+Rows marked "Blocked, always" or "Refused, always" are checked first and win over the
+rows that flags relax. So `100.100.100.200` stays blocked although it sits inside
+`100.64.0.0/10`, and the AWS metadata address stays blocked although it sits inside
+`fc00::/7`, even with `--allow-private-network`.
 
 - **`hosted` is fixed.** It is chosen by the server's configuration, takes no parameters,
   and refuses to be constructed in a relaxed form. No request parameter can change it.
