@@ -1,0 +1,24 @@
+name: Feature or check
+description: Propose a new check or capability.
+labels: ["type:feature"]
+body:
+  - type: textarea
+    id: context
+    attributes:
+      label: Context
+      description: The problem this solves. For a new check, the spec section it would cite.
+    validations:
+      required: true
+  - type: textarea
+    id: tasks
+    attributes:
+      label: Tasks
+      value: |
+        - [ ]
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance criteria
+      description: How we'll know it's done. For a check, the bad and good fixtures it must flag and pass.
+    validations:
+      required: true

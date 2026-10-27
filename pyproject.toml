@@ -1,0 +1,71 @@
+[project]
+name = "sso-auditor-workspace"
+version = "0.0.0"
+description = "Workspace root for sso-auditor; not published."
+requires-python = ">=3.12"
+dependencies = ["sso-auditor", "sso-auditor-api", "sso-auditor-core"]
+
+[dependency-groups]
+dev = [
+    "mypy>=2.4.0",
+    "pre-commit>=4.7.0",
+    "pre-commit-hooks>=6.0.0",
+    "pytest>=9.1.1",
+    "ruff>=0.17.1",
+    "zizmor>=1.31.1",
+]
+
+[tool.uv]
+package = false
+
+[tool.uv.workspace]
+members = ["packages/*"]
+
+[tool.uv.sources]
+sso-auditor = { workspace = true }
+sso-auditor-api = { workspace = true }
+sso-auditor-core = { workspace = true }
+
+[tool.ruff]
+target-version = "py312"
+line-length = 100
+src = ["packages/core/src", "packages/cli/src", "packages/api/src"]
+
+[tool.ruff.lint]
+select = [
+    "E",   # pycodestyle errors
+    "W",   # pycodestyle warnings
+    "F",   # pyflakes
+    "I",   # isort
+    "N",   # pep8-naming
+    "B",   # flake8-bugbear
+    "S",   # flake8-bandit
+    "UP",  # pyupgrade
+    "C4",  # flake8-comprehensions
+    "SIM", # flake8-simplify
+    "RET", # flake8-return
+    "PTH", # flake8-use-pathlib
+    "PT",  # flake8-pytest-style
+    "TID", # flake8-tidy-imports
+    "RUF", # ruff-specific
+]
+
+[tool.ruff.lint.per-file-ignores]
+"packages/*/tests/**" = [
+    "S101", # assert is how pytest checks things
+    "S603", # subprocess calls in tests run our own console script
+]
+
+[tool.mypy]
+python_version = "3.12"
+strict = true
+files = ["packages"]
+explicit_package_bases = true
+mypy_path = ["packages/core/src", "packages/cli/src", "packages/api/src"]
+warn_unreachable = true
+
+[tool.pytest.ini_options]
+testpaths = ["packages/core/tests", "packages/cli/tests", "packages/api/tests"]
+addopts = ["--import-mode=importlib", "--strict-markers", "--strict-config", "-ra"]
+xfail_strict = true
+filterwarnings = ["error"]

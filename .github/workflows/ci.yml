@@ -1,0 +1,80 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  lint:
+    name: Lint
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+      - name: Install uv
+        run: |
+          python3 -m venv "$RUNNER_TEMP/uv"
+          "$RUNNER_TEMP/uv/bin/pip" install --quiet --require-hashes --no-deps -r .github/requirements/uv.txt
+          echo "$RUNNER_TEMP/uv/bin" >> "$GITHUB_PATH"
+      - name: Install dependencies
+        run: uv sync --locked
+      - name: Lint, format check, type check, workflow audit
+        run: make lint
+        env:
+          # Lets zizmor run its online audits, which check that each pinned action
+          # SHA exists upstream and matches its version comment. Read-only token.
+          GH_TOKEN: ${{ github.token }}
+      - name: pre-commit hooks
+        run: uv run --locked pre-commit run --all-files --show-diff-on-failure
+        env:
+          # make lint has just run these; pre-commit adds the file hygiene checks.
+          SKIP: ruff-check,ruff-format,mypy
+
+  test:
+    name: Test (Python ${{ matrix.python-version }})
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.12", "3.13", "3.14"]
+    env:
+      UV_PYTHON: ${{ matrix.python-version }}
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+      - name: Install uv
+        run: |
+          python3 -m venv "$RUNNER_TEMP/uv"
+          "$RUNNER_TEMP/uv/bin/pip" install --quiet --require-hashes --no-deps -r .github/requirements/uv.txt
+          echo "$RUNNER_TEMP/uv/bin" >> "$GITHUB_PATH"
+      - name: Install dependencies
+        run: uv sync --locked
+      - name: Test
+        run: make test
+
+  # The one check the ruleset on main requires, so the matrix can change
+  # without editing the ruleset.
+  ci-ok:
+    name: CI OK
+    if: always()
+    needs: [lint, test]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - name: All jobs passed
+        run: test "$LINT" = success && test "$TEST" = success
+        env:
+          LINT: ${{ needs.lint.result }}
+          TEST: ${{ needs.test.result }}

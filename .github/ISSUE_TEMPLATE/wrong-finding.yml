@@ -1,0 +1,44 @@
+name: Wrong or missing finding
+description: A check flagged something it shouldn't have, missed something, or cited the wrong spec section.
+title: "rule <rule-id>: "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for checking the checker. Please don't paste secrets, tokens or private
+        hostnames. A discovery document and JWKS are public, so those are fine to share.
+  - type: dropdown
+    id: kind
+    attributes:
+      label: What went wrong?
+      options:
+        - False positive (flagged, but the configuration is fine)
+        - False negative (a real problem wasn't flagged)
+        - Wrong severity
+        - Wrong or outdated spec citation
+    validations:
+      required: true
+  - type: input
+    id: rule
+    attributes:
+      label: Rule id
+      placeholder: e.g. id-token-rs256-missing
+  - type: input
+    id: provider
+    attributes:
+      label: Identity provider and version
+      placeholder: e.g. Keycloak 26.2, Entra ID (tenant-specific), Auth0
+    validations:
+      required: true
+  - type: textarea
+    id: details
+    attributes:
+      label: What you expected, and why
+      description: Quote or link the spec section that supports your reading.
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Report output or the relevant part of the discovery document
+      render: json
