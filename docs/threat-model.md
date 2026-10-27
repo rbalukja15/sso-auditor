@@ -16,7 +16,8 @@ sso-auditor runs in two places:
 
 Everything an issuer serves is untrusted: the discovery document, every URL inside it,
 the JWKS, redirect targets, DNS answers for its hostnames, response sizes and timing.
-LLM output is untrusted too. Requests the tool may make are listed in ADR-0002 (#6).
+LLM output is untrusted too. Requests the tool may make are listed in
+[ADR-0002](adr/0002-data-sources-and-read-only-guarantees.md).
 
 ## Assets
 

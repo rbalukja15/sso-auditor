@@ -13,7 +13,8 @@ Keycloak admin mode (#8, #11, #12) is v1.1.
 Read these before changing behaviour:
 
 - [ADR-0001](docs/adr/0001-stack-and-scope.md): stack, scope, and invariants I1 to I4
-- ADR-0002 (#6): the request allowlist and network policy per mode
+- [ADR-0002](docs/adr/0002-data-sources-and-read-only-guarantees.md): the request
+  allowlist and the network policy per mode
 - The GitHub issue you're working on: its Context, Tasks and Acceptance criteria are the spec
 
 ## Layout

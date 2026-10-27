@@ -39,7 +39,7 @@ Later issues reference these by number. Each one is checkable by a test or a rev
 | --- | --- | --- |
 | **I1** | Every finding has a `spec_ref` that is a key in the spec catalog (`specs/catalog.yaml`). A rule without a valid `spec_ref` cannot be registered. | Rule engine and its catalog test (#10) |
 | **I2** | LLM output cannot add, remove or change findings. The model returns only `{finding_id, explanation}` pairs; code joins rule id, severity, `spec_ref` and evidence, and drops anything that doesn't match an existing finding. | Explanation validator and mocked-LLM tests (#16, #34) |
-| **I3** | The tool makes only the requests listed in ADR-0002, and every one of them goes through the safe fetcher. The one exception is the call to the LLM provider's fixed API endpoint, which ADR-0002 defines. | ADR-0002 (#6), safe fetcher and its import check (#30) |
+| **I3** | The tool makes only the requests listed in [ADR-0002](0002-data-sources-and-read-only-guarantees.md), and every one of them goes through the safe fetcher. The one exception is the call to the LLM provider's fixed API endpoint, which ADR-0002 defines. | ADR-0002 (#6), safe fetcher and its import check (#30) |
 | **I4** | OAuth security citations use RFC 9700 sections, never `draft-ietf-oauth-security-topics`. Citations point at published RFCs and OpenID specs, never drafts. | Catalog test that rejects `draft-` documents (#10) |
 
 #### Release scope
