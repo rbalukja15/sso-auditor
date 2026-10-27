@@ -61,10 +61,12 @@ Always run `make lint test` before committing. Use `uv run --locked`, never bare
   client, sends credentials anywhere but the configured admin origin (v1.1), or changes
   provider configuration. The only requests are the ones in ADR-0002 (invariant I3).
 - **All outbound HTTP goes through the safe fetcher** (`sso_auditor_core.fetch`, #30).
-  Never import `httpx`, `requests`, `urllib.request`, `urllib3`, `aiohttp` or
-  `http.client` anywhere else; a test fails if you do. The fetcher's `cli` and `hosted`
-  policies are the only way to relax a network restriction, and `hosted` cannot be
-  relaxed at all.
+  Never import `httpx`, `requests`, `urllib.request`, `urllib3`, `aiohttp`,
+  `http.client`, `socket` or any other network client anywhere else. Ruff's banned-api
+  table in `pyproject.toml` lists them, and a test fails even if you add `noqa`. Import
+  the fetcher only from `sso_auditor_core.fetch` itself, never its submodules. The
+  fetcher's `cli` and `hosted` policies are the only way to relax a network restriction,
+  and `hosted` cannot be relaxed at all.
 - **Every finding cites a spec section from the catalog** (`specs/catalog.yaml`, #10;
   invariant I1). Cite the exact section number.
 - **Cite RFC 9700, never `draft-ietf-oauth-security-topics`** (I4). No drafts at all.
