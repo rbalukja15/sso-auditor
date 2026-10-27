@@ -38,4 +38,4 @@ The README embeds the same diagram; change both together.
   config model treat it as data, and the web report renders it as text.
 - **LLM output is untrusted** too. It can only attach prose to a known `finding_id`
   (ADR-0001, invariant I2).
-- The threat model (#35) maps each adversary to the issue that mitigates it.
+- The [threat model](threat-model.md) maps each adversary to the issue that mitigates it.
