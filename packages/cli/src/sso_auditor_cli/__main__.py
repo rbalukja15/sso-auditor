@@ -2,4 +2,5 @@
 
 from sso_auditor_cli.main import app
 
-app(prog_name="sso-auditor")
+if __name__ == "__main__":
+    app(prog_name="sso-auditor")

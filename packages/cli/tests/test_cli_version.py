@@ -21,6 +21,7 @@ def test_version_flag_prints_version() -> None:
 
 
 def test_installed_console_script_prints_version() -> None:
+    # The POSIX layout: on Windows the script is sso-auditor.exe in Scripts/. CI is Linux.
     script = Path(sys.executable).with_name("sso-auditor")
     assert script.exists(), f"console script not installed next to {sys.executable}"
 

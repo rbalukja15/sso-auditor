@@ -8,7 +8,7 @@ RUN := $(UV) run --locked
 .PHONY: help dev lint fmt test eval
 
 help: ## List the targets
-	@grep -E '^[a-z-]+:.*## ' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*## "}; {printf "  %-6s %s\n", $$1, $$2}'
+	@grep -E '^[a-z-]+:.*## ' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*## "}; {printf "  %-12s %s\n", $$1, $$2}'
 
 dev: ## Install the packages and dev tools, and set up the pre-commit hook
 	$(UV) sync --locked
