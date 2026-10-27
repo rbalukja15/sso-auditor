@@ -79,7 +79,8 @@ within these limits is welcome.
   tokens used. Client IP addresses are held in memory for rate limiting and are not
   written to the application's logs; the hosting platform's edge proxy keeps its own
   access logs under its own policy. The demo never logs fetched documents, response
-  bodies, or LLM prompts and responses. Application logs are kept for at most 30 days.
+  bodies, or LLM prompts and responses. Application logs are kept for 30 days at most,
+  and for less where that's practical: a submitted host name can itself be sensitive.
   The demo sends the LLM provider only short, truncated values from public documents.
   #20 and #21 implement this policy; until the demo is live, nothing is logged anywhere.
 

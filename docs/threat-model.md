@@ -53,7 +53,7 @@ An anonymous user of the hosted demo, possibly scripted.
 | --- | --- | --- | --- |
 | Submits an internal URL (`http://169.254.169.254/`, `https://[fdaa::3]/`, `https://db.internal/`) | A3 | The hosted fetcher profile is strict and set by server config; no request parameter can relax it | #30, #20 |
 | Uses error messages or timing to map internal hosts | A3 | Generic errors that don't distinguish refused from timed out and never echo response bodies | #20 |
-| Floods the demo or burns the LLM budget | A5, A1 | Per-IP and global rate limits, a cap on explained findings and `max_tokens`, a daily LLM budget with a kill switch, a demo-only key with a provider-side spend limit | #20 |
+| Floods the demo or burns the LLM budget | A5, A1 | Per-IP and global rate limits keyed on Fly's `Fly-Client-IP` (`X-Forwarded-For` and other client-supplied headers are ignored, since they can be spoofed), a cap on explained findings and `max_tokens`, a daily LLM budget with a kill switch, a demo-only key with a provider-side spend limit | #20 |
 | Points the demo at a third party over and over | A6 | A per-target-host cap on outbound fetches; the demo only ever makes the read-only requests in ADR-0002 | #20, #6 |
 | Tries to submit admin credentials | A2 | The hosted build has admin mode disabled and rejects any request carrying a credential parameter | #33 |
 
@@ -91,6 +91,9 @@ Compromises a dependency, a GitHub Action or a release artifact.
 - **Trust in TLS and DNS.** The fetcher relies on the system's CA bundle (or the one the
   user passes) and on DNS answers being validated per connection. A CA compromise is
   out of scope.
+- **The LLM call is a second outbound path.** It doesn't go through the fetcher
+  (ADR-0002), but its endpoint is fixed by configuration and never comes from user
+  input or a fetched document, so no one can point it somewhere else.
 - **Proxies are not used.** The fetcher ignores `HTTP(S)_PROXY`, because a proxy would
   resolve hostnames itself and bypass the address checks. Networks that force a proxy
   can't run live audits; offline file inputs still work (#7).
