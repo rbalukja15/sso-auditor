@@ -63,7 +63,7 @@ offline. sso-auditor takes a different angle:
 - it reports explicitly what was **not evaluated**;
 - LLM explanations are **bound to the findings** and validated, so the model can't invent
   or alter them;
-- detection quality is **measured and published** (precision and recall over good and
+- detection quality will be **measured and published** (precision and recall over good and
   bad fixture configurations, see [docs/evaluation.md](docs/evaluation.md)).
 
 The two tools are **complementary**, not competitors.
