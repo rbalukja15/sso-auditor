@@ -2,6 +2,16 @@
 
 A dated log of decisions, dead ends and lessons learned while building sso-auditor, newest entry first.
 
+## 2026-10-27
+
+- Releases start at 0.1.0. With no earlier release, release-please proposed 1.0.0 for the
+  first release PR; `initial-version` in `release-please-config.json` fixes that. v1.0.0
+  stays the M6 release.
+- release-please reads both a PR's own commits and GitHub's merge commit, whose body
+  repeats the PR title, so a PR merged with a merge commit shows up twice in the
+  changelog. Squash merging, with the PR title as the commit message, gives one entry per
+  PR.
+
 ## 2026-10-22
 
 - Accepted ADR-0001: Python with uv, Typer, httpx, FastAPI and Claude for explanations.
