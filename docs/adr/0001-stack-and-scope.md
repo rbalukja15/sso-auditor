@@ -39,7 +39,7 @@ Later issues reference these by number. Each one is checkable by a test or a rev
 | --- | --- | --- |
 | **I1** | Every finding has a `spec_ref` that is a key in the spec catalog (`specs/catalog.yaml`). A rule without a valid `spec_ref` cannot be registered. | Rule engine and its catalog test (#10) |
 | **I2** | LLM output cannot add, remove or change findings. The model returns only `{finding_id, explanation}` pairs; code joins rule id, severity, `spec_ref` and evidence, and drops anything that doesn't match an existing finding. | Explanation validator and mocked-LLM tests (#16, #34) |
-| **I3** | The tool makes only the requests listed in ADR-0002, and every one of them goes through the safe fetcher. | ADR-0002 (#6), safe fetcher and its import check (#30) |
+| **I3** | The tool makes only the requests listed in ADR-0002, and every one of them goes through the safe fetcher. The one exception is the call to the LLM provider's fixed API endpoint, which ADR-0002 defines. | ADR-0002 (#6), safe fetcher and its import check (#30) |
 | **I4** | OAuth security citations use RFC 9700 sections, never `draft-ietf-oauth-security-topics`. Citations point at published RFCs and OpenID specs, never drafts. | Catalog test that rejects `draft-` documents (#10) |
 
 #### Release scope
@@ -117,7 +117,8 @@ of the normative text so reports quote the spec rather than paraphrase it (#10).
   accepts sampling parameters such as `temperature`, so **#34** gets reproducible scores
   by committing recorded model responses, not by setting `temperature` to 0. Refusals
   (`stop_reason: "refusal"`) fall back to the rule's template text, like any other LLM
-  failure.
+  failure. Moving to another Claude model needs a devlog entry, re-recorded responses and
+  a fresh eval run (#34), not a new ADR; a change of provider supersedes this one.
 - **#20** owns cost control on the demo: a cap on explained findings per audit, a
   `max_tokens` limit, a daily budget, the `LLM_ENABLED=false` kill switch, and a separate
   demo-only key with a provider-side spend limit.
