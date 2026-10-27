@@ -411,6 +411,9 @@ def _header_map(headers: httpx.Headers) -> dict[str, str]:
 
 
 def _is_tls_failure(exc: BaseException) -> bool:
+    """Whether an ``ssl.SSLError`` caused this error. httpx and httpcore keep the cause
+    chain, so the message is never consulted: a refused connection whose text happens to
+    mention "SSL" is still a connect failure."""
     seen: set[int] = set()
     current: BaseException | None = exc
     while current is not None and id(current) not in seen:
@@ -418,4 +421,4 @@ def _is_tls_failure(exc: BaseException) -> bool:
             return True
         seen.add(id(current))
         current = current.__cause__ or current.__context__
-    return "SSL" in str(exc) or "certificate" in str(exc).lower()
+    return False

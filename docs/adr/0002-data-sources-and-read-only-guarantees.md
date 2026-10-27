@@ -88,7 +88,9 @@ It parses each URL once, validates it, resolves the hostname, validates every ad
 the answer, and connects to the validated IP while sending SNI and checking the
 certificate against the hostname. When a name resolves to several addresses, every one
 is validated before any is tried, and the fetcher only ever connects to an address it
-validated. Each redirect hop goes through the same checks. HTTP proxies from the
+validated. One refused address refuses the whole answer, so an issuer with a stray
+private or link-local record fails outright rather than being half trusted. Each
+redirect hop goes through the same checks. HTTP proxies from the
 environment are ignored: a proxy resolves hostnames itself, which would bypass the
 address checks.
 
@@ -118,8 +120,9 @@ rows that flags relax. So `100.100.100.200` stays blocked although it sits insid
 - **`cli` relaxations are explicit and loud.** Each flag prints a warning on every run.
 - **TLS.** Certificates are always verified against the hostname, with TLS 1.2 or later,
   against the bundled Mozilla CA set (certifi). The fetcher reads nothing from the
-  environment, including `SSLKEYLOGFILE`; for a private CA the CLI passes `--ca-bundle PATH`, or `SSL_CERT_FILE` when
-  it is set. The hosted profile only uses the bundled set. There is no insecure mode.
+  environment, including `SSLKEYLOGFILE`; for a private CA the CLI passes
+  `--ca-bundle PATH`, or `SSL_CERT_FILE` when it is set. The hosted profile only uses the
+  bundled set. There is no insecure mode.
 
 ### LLM provider traffic
 

@@ -471,6 +471,7 @@ class TestTransportErrors:
             (httpx.PoolTimeout("slow"), FetchTimeout),
             (httpx.ConnectTimeout("slow"), FetchTimeout),
             (httpx.ConnectError("refused"), ConnectFailed),
+            (httpx.ConnectError("SSL proxy refused the certificate request"), ConnectFailed),
             (httpx.RemoteProtocolError("garbage"), InvalidResponse),
             (httpx.ReadError("reset"), InvalidResponse),
         ],
