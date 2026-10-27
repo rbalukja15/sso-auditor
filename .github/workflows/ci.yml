@@ -36,6 +36,9 @@ jobs:
           GH_TOKEN: ${{ github.token }}
       - name: pre-commit hooks
         run: uv run --locked pre-commit run --all-files --show-diff-on-failure
+        env:
+          # make lint has just run these; pre-commit adds the file hygiene checks.
+          SKIP: ruff-check,ruff-format,mypy
 
   test:
     name: Test (Python ${{ matrix.python-version }})
