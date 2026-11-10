@@ -1,0 +1,60 @@
+name: Review
+
+on:
+  pull_request:
+    types: [opened, reopened, ready_for_review]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+concurrency:
+  group: review-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  # Runs the ponytail-review skill on the pull request and posts its report
+  # as one comment. It reviews once per PR; re-run the job from the Actions
+  # tab to review again after new pushes. Fork PRs are skipped because they
+  # get no secrets.
+  ponytail:
+    if: >-
+      github.event.pull_request.draft == false
+      && github.actor != 'dependabot[bot]'
+      && github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      # The plugin's hooks run outside --allowedTools with the OAuth token in
+      # their environment, so it comes from a pinned commit, not the default
+      # branch. Dependabot doesn't track this; bump the SHA and tag together.
+      - name: Fetch ponytail at a pinned commit
+        run: |
+          git init --quiet "$RUNNER_TEMP/ponytail"
+          git -C "$RUNNER_TEMP/ponytail" fetch --quiet --depth 1 https://github.com/DietrichGebert/ponytail.git "$PONYTAIL_SHA"
+          git -C "$RUNNER_TEMP/ponytail" checkout --quiet FETCH_HEAD
+        env:
+          PONYTAIL_SHA: 7801d061243d7b753bad0e0b3c057cd250b11755 # v5.3.3
+      - uses: anthropics/claude-code-action@c0949c50a78c1ec8ce2647db36629b870e715d0c # v1.0.268
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          # Comments come from github-actions[bot] instead of a separate app.
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          include_fix_links: false
+          plugin_marketplaces: ${{ runner.temp }}/ponytail
+          plugins: ponytail@ponytail
+          prompt: |
+            Use the ponytail-review skill to review pull request #${{ github.event.pull_request.number }}
+            in ${{ github.repository }}. The change is the diff between origin/${{ github.base_ref }} and HEAD;
+            read `gh pr view ${{ github.event.pull_request.number }}` for its description.
+
+            Post the full report as a single comment with
+            `gh pr comment ${{ github.event.pull_request.number }} --body-file <file>`.
+            The comment is the report only: no title naming a tool, no signature,
+            no footer, no links to any website.
+          claude_args: >-
+            --allowedTools "Read,Grep,Glob,Write,Skill,Bash(git diff:*),Bash(git log:*),Bash(gh pr view:*),Bash(gh pr diff:*),Bash(gh pr comment:*)"
